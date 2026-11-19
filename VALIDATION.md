@@ -2,7 +2,28 @@
 
 Verified on 19 November 2026 (Asia/Calcutta).
 
-## Successful checks
+## Final branding and publication checks
+
+The final logo correction preserved the existing application and backend. Checks rerun against the finished source:
+
+| Check | Result |
+| --- | --- |
+| TypeScript and ESLint | Both passed; no lint errors or warnings |
+| Production build | Passed; all 11 static-page generation tasks completed |
+| Vitest / Neon PostgreSQL | 18/18 passed |
+| Playwright / production server / Neon | 12/12 passed, desktop and touch-enabled mobile Chromium, 2.2 minutes |
+| Official logo | Exact local official SVG; 76 x 28 CSS pixels on Home, Discover, and Matches at desktop and mobile sizes |
+| Metadata | Official local favicon and Apple touch icon configured |
+| Visual review | Final Discover desktop/mobile, celebration, and Matches screenshots opened and inspected; tablet also captured |
+| Responsive walkthrough | Desktop 1440 x 900, tablet 768 x 1024, mobile 390 x 844; no horizontal overflow, controls above navigation, zero browser console/page errors |
+| Security audit | All 136 existing history blobs and current files scanned before the final commit; no supplied hosted credentials, token signatures, private keys, or private email addresses in file contents |
+| Exclusions | Environment files, dependencies, build output, local database, and temporary tooling ignored; `.env.example` contains placeholders only |
+
+The official asset sources are documented in `public/brand/README.md`. Final screenshots are in `docs/screenshots/`; earlier redesign comparison images remain historical. Public GitHub `main` is the submission branch. The final deployment commit and public HTTPS smoke results are verified during publication and reported in the delivery message.
+
+The existing Vercel project is retained. Automatic GitHub deployment remains a manual Settings > Git connection step because the available connector cannot reconnect this existing unlinked project. Publication deploys the exact GitHub commit through Vercel's API instead.
+
+## Earlier implementation checks
 
 | Check | Actual result |
 | --- | --- |

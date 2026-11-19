@@ -2,6 +2,8 @@
 
 The redesign adapts the design system observed on [Coy's official website](https://getcoy.com/), rather than copying its marketing homepage. The original production app was captured before any source changes.
 
+The before/after images below document the earlier redesign. The final publication replaces its typographic header approximation with Coy's official SVG; see the current [README screenshots](../../README.md#screenshots) and [asset sources](../../public/brand/README.md).
+
 ## What changed
 
 - Replaced the three-row instructional section with one compact peach swipe guide and a single privacy line.

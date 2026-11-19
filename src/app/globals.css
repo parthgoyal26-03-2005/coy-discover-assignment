@@ -55,15 +55,8 @@ button svg, a svg { pointer-events: none; }
   align-items: center;
   justify-content: space-between;
 }
-.wordmark {
-  font-size: 39px;
-  font-weight: 800;
-  letter-spacing: -3px;
-  line-height: 1;
-  display: flex;
-  align-items: baseline;
-}
-.wordmark span { color: var(--pink); font-size: 14px; letter-spacing: 0; margin-left: 3px; }
+.wordmark { display: inline-flex; align-items: center; flex-shrink: 0; }
+.wordmark img { display: block; width: 76px; height: 28px; }
 .header-note { font-size: 15px; font-weight: 600; }
 .header-tools { display: flex; gap: 14px; align-items: center; }
 .demo-label { font-size: 13px; color: var(--muted); }
@@ -336,8 +329,6 @@ kbd { display: inline-grid; place-items: center; min-width: 21px; height: 21px; 
 @media (max-width: 600px) {
   body { padding-bottom: calc(86px + env(safe-area-inset-bottom)); }
   .site-header { height: 58px; padding: 0 18px; }
-  .wordmark { font-size: 32px; letter-spacing: -2.6px; }
-  .wordmark span { font-size: 11px; }
   .header-note, .demo-label { display: none; }
   .header-tools .icon-button { width: 34px; height: 34px; }
   .discover-layout { margin: 8px 12px 18px; border-radius: 23px; box-shadow: 4px 4px 0 var(--ink); }

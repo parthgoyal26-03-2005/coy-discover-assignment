@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Compass, Home, RotateCcw, Heart, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
@@ -22,7 +23,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   }
   return <>
     <a className="skip-link" href="#main-content">Skip to content</a>
-    <header className="site-header"><Link href="/discover" className="wordmark" aria-label="Coy Discover">coy<span>●</span></Link>
+    <header className="site-header"><Link href="/discover" className="wordmark" aria-label="Coy Discover"><Image src="/brand/coy-wordmark.svg" width={76} height={28} alt="" loading="eager" /></Link>
       <span className="header-note">Discover</span>
       <div className="header-tools"><span className="demo-label">Demo · 18+</span><button className="icon-button" aria-label="Reset demo" onClick={() => setResetOpen(true)}><RotateCcw size={19} /></button></div>
     </header>

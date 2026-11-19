@@ -1,14 +1,12 @@
 # Coy Discover
 
-**A little curiosity. A real connection.**
-
 A standalone, mobile-first proposal for Coy's Discover tab, built for **Part B of the Coy SDE Intern assignment**. Browse 36 fictional adults, swipe left to pass or right to like, and discover a connection only when the feeling is mutual.
 
-**[Open the live app](https://coy-discover-assignment.vercel.app)** · **[Public GitHub repository](https://github.com/parthgoyal26-03-2005/coy-discover-assignment)** · **[Passing verification workflow](https://github.com/parthgoyal26-03-2005/coy-discover-assignment/actions/runs/44551376852)**
+**[Open the live app](https://coy-discover-assignment.vercel.app/discover)** · **[Public GitHub repository](https://github.com/parthgoyal26-03-2005/coy-discover-assignment)** · **[Verification workflows](https://github.com/parthgoyal26-03-2005/coy-discover-assignment/actions)**
 
-The live app is deployed to Vercel on Node.js 24 and connected to Neon PostgreSQL. Its migration and all 36 seed profiles are applied. HTTPS browser verification confirmed mutual matching, reload persistence, touch dragging, session isolation, scoped reset, and zero browser console errors. The verified application source is commit `3367b31992b071b279ace675e8830198f44ee38d`; subsequent documentation commits record the live results.
+The live app runs on the existing Vercel project with Node.js 24 and Neon PostgreSQL. All 36 fictional profiles are seeded. The default `main` branch contains the finished redesign and official local logo assets.
 
-This project uses its own data and backend. It never calls Coy's production APIs. Part A, OTP, invitations, payments, and chat are outside this submission.
+This is an independent recruitment demonstration, not Coy's official application or codebase. It uses its own data and backend and never calls Coy's production APIs. Part A, OTP, invitations, payments, and chat are outside this submission.
 
 ## What works
 
@@ -23,11 +21,11 @@ This project uses its own data and backend. It never calls Coy's production APIs
 
 ## Brand refinement
 
-The `style/coy-brand-refinement` branch refines the existing UI using Coy?s measured typography, colors, borders, and button styles. See [the visual review and actual before/after screenshots](docs/redesign/README.md). The API, matching logic, database schema, profile data, and existing tests are preserved.
+The interface uses Coy's measured typography, colors, borders, and button styles. The shared header renders the official SVG wordmark from [public/brand/](public/brand/README.md), including its original lettering and pink dot. Home, Discover, and Matches use the same header; the favicon and Apple touch icon also use official local assets. See [the visual review and actual before/after screenshots](docs/redesign/README.md). The API, matching logic, database schema, profile data, and existing tests are preserved.
 
 ## Screenshots
 
-Real screenshots are captured by the Playwright walkthrough, with the app connected to local PostgreSQL.
+These real screenshots show the final production build connected to Neon PostgreSQL, captured with Playwright on desktop and mobile.
 
 | Discover · desktop | Discover · mobile |
 | --- | --- |
@@ -53,7 +51,7 @@ Real screenshots are captured by the Playwright walkthrough, with the app connec
 | Vitest + Playwright | Database integration tests and real browser walkthroughs |
 | Vercel | Deployment target; Node.js API runtime |
 
-Headings and body text use Bricolage Grotesque, matching Coy?s official site. Both are bundled locally. The interface follows the supplied Coy reference: white surfaces, bright pink actions, lavender accents, rounded cards, dark outlines, and hard offset shadows.
+Headings and body text use Bricolage Grotesque, matching Coy's official site. Fonts are bundled locally. The interface follows the supplied Coy reference: white surfaces, bright pink actions, lavender accents, rounded cards, dark outlines, and hard offset shadows.
 
 ## Start locally
 
@@ -81,7 +79,7 @@ Use the URL provided by Neon, including its TLS parameters. Keep it server-only:
 npm run db:local
 ```
 
-Leave that terminal open. This starts a **real PostgreSQL server**, with data stored under ignored `.postgres/`. The default URL in `.env.example` points to it. Stop it with Ctrl+C; restarting preserves the database.
+Leave that terminal open. This starts a **real PostgreSQL server**, with data stored under ignored `.postgres/`. Replace the placeholder in `.env.local` with `DATABASE_URL=postgresql://coy:coy_local_only@127.0.0.1:54329/coy`. These credentials are disposable local development defaults, not hosted database credentials. Stop it with Ctrl+C; restarting preserves the database.
 
 The `embedded-postgres` development dependency bundles PostgreSQL binaries. If your package manager blocks its installation script, approve/rebuild the platform package as described in the package's README. On Linux, run as a normal user rather than root. For machines where bundled binaries are unavailable, use Docker or an existing PostgreSQL installation.
 
@@ -243,22 +241,15 @@ Vitest exercises the matching service against PostgreSQL, including persistence,
 
 See [VALIDATION.md](VALIDATION.md) for the checks actually run during implementation.
 
-## Deploy to Vercel with Neon
+## Existing Vercel deployment
 
-1. Create a new Neon project, set the connection URL in your local environment, and run `db:migrate` followed by `db:seed` against that database.
-2. Push this source to a new public GitHub repository named `coy-discover-assignment`.
-3. Import that repository as a **new** Vercel project. Add `DATABASE_URL` to the appropriate Production and Preview environments. Set the Node.js version to 24.x.
-4. Deploy using the included Next.js configuration. The API handlers explicitly use the Node.js runtime; the app's local portraits and fonts are included in the deployment.
-5. Verify `/feed`, a swipe, a confirmed match, and reload persistence on the live URL. Verify that a separate browser has a separate demo history.
+Production: https://coy-discover-assignment.vercel.app/discover
 
-Migrations run explicitly, rather than on every function invocation or build. Keep Preview and Production databases separate. Never run a destructive development reset or replace an unrelated Vercel project. Preserve the production database across deploys for session continuity.
+The existing `coy-discover-assignment` project is retained, including its domain, Node.js 24 settings, and server-only `DATABASE_URL`. Deploy the verified `main` commit to that project; do not create a second project or replace its database.
 
-If repository creation is not available in your environment, these commands prepare the requested public repo after GitHub CLI authentication:
+The current publication uses a deployment from the GitHub commit through Vercel's API. Automatic deployment from GitHub pushes is not connected. To enable it, open the existing project's **Settings > Git > Connect Git Repository**, select `parthgoyal26-03-2005/coy-discover-assignment`, and use `main` as the production branch. Preserve the existing environment variables.
 
-```sh
-gh auth login
-gh repo create coy-discover-assignment --public --source=. --remote=origin --push
-```
+For a separate installation, configure your own `DATABASE_URL`, run `db:migrate` and `db:seed` explicitly, and import the repository into your own Vercel project. The API handlers use the Node.js runtime. Migrations do not run on builds or function invocations. Retain the same database and domain across updates to preserve sessions.
 
 ## Project map
 
@@ -272,6 +263,7 @@ src/lib/matching/        Transactional business rules
 src/lib/session/         HTTP-only anonymous sessions
 src/lib/validation/      Zod request schema
 src/data/                Fictional seed fixtures (server tooling only)
+public/brand/            Official Coy wordmark and app icons
 public/demo-profiles/    36 original local SVG illustrations
 scripts/                Local PostgreSQL, migration, seeding
 tests/                  Database integration and browser tests
