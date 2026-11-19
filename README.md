@@ -21,6 +21,10 @@ This project uses its own data and backend. It never calls Coy's production APIs
 - A reset action scoped to the current browser's session.
 - Loading skeletons, empty and error states, failed-swipe recovery, reduced motion, and accessible dialogs.
 
+## Brand refinement
+
+The `style/coy-brand-refinement` branch refines the existing UI using Coy?s measured typography, colors, borders, and button styles. See [the visual review and actual before/after screenshots](docs/redesign/README.md). The API, matching logic, database schema, profile data, and existing tests are preserved.
+
 ## Screenshots
 
 Real screenshots are captured by the Playwright walkthrough, with the app connected to local PostgreSQL.
@@ -49,7 +53,7 @@ Real screenshots are captured by the Playwright walkthrough, with the app connec
 | Vitest + Playwright | Database integration tests and real browser walkthroughs |
 | Vercel | Deployment target; Node.js API runtime |
 
-The heading font is Bricolage Grotesque; body text uses DM Sans. Both are bundled locally. The interface follows the supplied Coy reference: white surfaces, bright pink actions, lavender accents, rounded cards, dark outlines, and hard offset shadows.
+Headings and body text use Bricolage Grotesque, matching Coy?s official site. Both are bundled locally. The interface follows the supplied Coy reference: white surfaces, bright pink actions, lavender accents, rounded cards, dark outlines, and hard offset shadows.
 
 ## Start locally
 

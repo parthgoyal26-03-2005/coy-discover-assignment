@@ -23,8 +23,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
   return <>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="site-header"><Link href="/discover" className="wordmark" aria-label="Coy Discover">coy<span>●</span></Link>
-      <span className="header-note">A little curiosity. A real connection.</span>
-      <div className="header-tools"><span className="demo-label">The Discover demo</span><button className="icon-button" aria-label="Reset demo" onClick={() => setResetOpen(true)}><RotateCcw size={19} /></button></div>
+      <span className="header-note">Discover</span>
+      <div className="header-tools"><span className="demo-label">Demo · 18+</span><button className="icon-button" aria-label="Reset demo" onClick={() => setResetOpen(true)}><RotateCcw size={19} /></button></div>
     </header>
     {children}
     <nav className="tab-bar" aria-label="Main navigation">
@@ -37,6 +37,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <button className="button primary full" disabled={busy} onClick={reset}>{busy ? <LoaderCircle className="spin" size={18} /> : null}Reset my demo</button>
       <button className="button quiet full" disabled={busy} onClick={() => setResetOpen(false)}>Keep my progress</button>
     </Dialog>
-    <footer className="site-footer"><Heart size={13} /> Made for mutual feelings. <span>Fictional people. Real privacy.</span></footer>
+    <footer className="site-footer"><Heart size={14} /> Likes stay private. Matches are mutual. <span>Fictional profiles · 18+</span></footer>
   </>;
 }

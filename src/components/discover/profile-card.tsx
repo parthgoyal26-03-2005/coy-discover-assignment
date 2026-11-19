@@ -23,12 +23,10 @@ export function ProfileCard({ profile, busy, onSwipe, exitDirection }: { profile
     exit={{ opacity: 0, x: reduced ? 0 : exitDirection === 'like' ? 240 : -240, transition: { duration: reduced ? 0 : 0.18 } }}
     onDragEnd={(_, info) => { if (busy) return; if (Math.abs(info.offset.x) > 95) void finish(info.offset.x > 0 ? 'like' : 'pass'); }}>
     <div className="portrait-wrap"><Image src={profile.photoUrl} alt={`Illustrated portrait of ${profile.name}`} fill loading="eager" sizes="(max-width: 600px) 92vw, 400px" draggable={false} />
-      <span className="portrait-label"><span />HERE TO MEET SOMEONE NEW</span>
       <motion.div className="swipe-stamp like-stamp" style={{ opacity: likeOpacity }} aria-hidden>LIKE</motion.div>
       <motion.div className="swipe-stamp pass-stamp" style={{ opacity: passOpacity }} aria-hidden>PASS</motion.div>
-      <span className="portrait-caption">A face to the name. An illustrated demo.</span>
     </div>
-    <div className="profile-info"><div className="profile-title"><h2>{profile.name}<span>, {profile.age}</span></h2><span className="profile-spark" aria-hidden>✳</span></div>
+    <div className="profile-info"><div className="profile-title"><h2>{profile.name}<span>, {profile.age}</span></h2></div>
       <p className="location"><MapPin size={14} />{profile.city}</p>
       <p className="bio">{profile.bio}</p>
       <div className="interests">{profile.interests.map(interest => <span key={interest}>{interest}</span>)}</div>
