@@ -14,8 +14,13 @@ Verified on 19 November 2026 (Asia/Calcutta).
 | `npm run test:e2e` with production Next.js and Neon | 12/12 passed, desktop and touch-enabled mobile Chromium, 3.2 minutes |
 | Migration and seeding | Applied successfully on both local PostgreSQL and Neon; repeated locally without duplicate profiles |
 | Local profile images | All 36 asset URLs returned 200 with SVG content types in browser tests |
+| Deployed profile images | All 36 public portrait URLs returned HTTP 200 with SVG content types |
 | Screenshots | Six actual screenshots captured and visually reviewed; no development UI overlays |
 | Secret exclusion | Supplied database credentials absent from tracked source; local environment files, database files, dependencies, and build output ignored |
+| GitHub Actions | [Verification workflow passed](https://github.com/parthgoyal26-03-2005/coy-discover-assignment/actions/runs/44551376852) on Ubuntu and Node.js 24, using its own PostgreSQL service |
+| Vercel | Production deployment reached READY on Node.js 24, source commit `3367b31992b071b279ace675e8830198f44ee38d` |
+| Public HTTPS app | [Live app](https://coy-discover-assignment.vercel.app) returned HTTP 200 without Vercel login |
+| Live browser smoke check | Passed: 36-profile feed, mutual match, one-sided like, pass, match and swipe reload persistence, secure HTTP-only cookie, session isolation, scoped reset, real mobile touch swipe, Home placeholder, no horizontal overflow, zero browser errors |
 
 ## Behaviors exercised
 
@@ -37,6 +42,6 @@ Verified on 19 November 2026 (Asia/Calcutta).
 
 ## Environment notes
 
-The Neon database was empty before the assignment schema was applied. The final browser suite ran against a production server, rather than a development server, with production Secure cookies on localhost. Hosted HTTPS verification follows deployment.
+The Neon database was empty before the assignment schema was applied. The final 12-test browser suite ran against a production server with Neon and production Secure cookies on localhost. A separate browser smoke check then exercised the deployed app over public HTTPS, using independent desktop and mobile contexts.
 
 The local machine uses Node.js 22.12.0. It completed these checks, but one lint dependency declares 22.13+; Node.js 24 is configured for Vercel and CI and recommended for new installations. The installed PostgreSQL connection library emits a notice about future `sslmode=require` semantics; the current driver verifies certificates. No database credentials are included in this report.

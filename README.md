@@ -4,6 +4,10 @@
 
 A standalone, mobile-first proposal for Coy's Discover tab, built for **Part B of the Coy SDE Intern assignment**. Browse 36 fictional adults, swipe left to pass or right to like, and discover a connection only when the feeling is mutual.
 
+**[Open the live app](https://coy-discover-assignment.vercel.app)** · **[Public GitHub repository](https://github.com/parthgoyal26-03-2005/coy-discover-assignment)** · **[Passing verification workflow](https://github.com/parthgoyal26-03-2005/coy-discover-assignment/actions/runs/44551376852)**
+
+The live app is deployed to Vercel on Node.js 24 and connected to Neon PostgreSQL. Its migration and all 36 seed profiles are applied. HTTPS browser verification confirmed mutual matching, reload persistence, touch dragging, session isolation, scoped reset, and zero browser console errors. The verified application source is commit `3367b31992b071b279ace675e8830198f44ee38d`; subsequent documentation commits record the live results.
+
 This project uses its own data and backend. It never calls Coy's production APIs. Part A, OTP, invitations, payments, and chat are outside this submission.
 
 ## What works
