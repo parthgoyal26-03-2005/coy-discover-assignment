@@ -4,11 +4,12 @@ import { eq } from 'drizzle-orm';
 import { getDb } from '../db/client';
 import { sessions } from '../db/schema';
 import { createSession } from '../matching/service';
+import { z } from 'zod';
 
 export async function getSession() {
   const jar = await cookies();
   const id = jar.get('coy_session')?.value;
-  if (id && /^[0-9a-f-]{36}$/i.test(id)) {
+  if (id && z.uuid().safeParse(id).success) {
     const [session] = await getDb().select({ id: sessions.id }).from(sessions).where(eq(sessions.id, id));
     if (session) return id;
   }

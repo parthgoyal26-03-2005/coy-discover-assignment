@@ -1,18 +1,23 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Compass, Home, RotateCcw, Heart, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog } from './ui/dialog';
 import { api } from '@/lib/api';
 export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
+  const router = useRouter();
   const [resetOpen, setResetOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   async function reset() {
     setBusy(true); setError('');
-    try { await api('/api/demo/reset', {}); window.location.assign('/discover'); }
+    try {
+      await api('/api/demo/reset', {});
+      if (path === '/discover') window.location.reload();
+      else { router.push('/discover'); setResetOpen(false); setBusy(false); }
+    }
     catch (e) { setError((e as Error).message); setBusy(false); }
   }
   return <>

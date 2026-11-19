@@ -19,18 +19,16 @@ export function Discover() {
   const [lastDirection, setLastDirection] = useState<Direction>('like');
   const inFlight = useRef(false);
   const current = profiles[0];
-  const load = useCallback(async () => {
-    setLoading(true); setError('');
-    try {
-      const data = await api<{ profiles: Profile[] }>('/feed');
-      setProfiles(data.profiles);
+  const load = useCallback(() => api<{ profiles: Profile[] }>('/feed')
+    .then(async data => {
       // Establish the browser cookie before a second session-dependent request.
       const matches = await api<{ matches: Match[] }>('/matches');
-      setMatchCount(matches.matches.length);
-    } catch (e) { setError((e as Error).message); }
-    finally { setLoading(false); }
-  }, []);
+      setProfiles(data.profiles); setMatchCount(matches.matches.length);
+    })
+    .catch((e: Error) => setError(e.message))
+    .finally(() => setLoading(false)), []);
   useEffect(() => { void load(); }, [load]);
+  function retry() { setLoading(true); setError(''); void load(); }
   const submit = useCallback(async (direction: Direction): Promise<boolean> => {
     if (inFlight.current || !current || matched) return false;
     inFlight.current = true; setBusy(true); setError(''); setLastDirection(direction);
@@ -54,14 +52,14 @@ export function Discover() {
   async function reset() {
     if (inFlight.current) return;
     inFlight.current = true; setBusy(true); setError('');
-    try { await api('/api/demo/reset', {}); await load(); }
+    try { await api('/api/demo/reset', {}); setLoading(true); await load(); }
     catch (e) { setError((e as Error).message); }
     finally { inFlight.current = false; setBusy(false); }
   }
   return <main id="main-content" className="discover-layout">
     <Intro />
     <section className="discovery-stage" aria-label="Discover profiles"><div className="stage-header"><div><p className="eyebrow mobile-eyebrow">A LITTLE CURIOSITY GOES A LONG WAY</p><h2>Discover<span className="pink-dot">.</span></h2><p>Meet someone new.</p></div><Link className="matches-link" href="/discover/matches"><Heart size={17} />Matches{matchCount > 0 && <span>{matchCount}</span>}</Link></div>
-      {error && <div className="error-banner" role="alert"><p>{error}</p>{!current && <button onClick={load}>Try again</button>}</div>}
+      {error && <div className="error-banner" role="alert"><p>{error}</p>{!current && <button onClick={retry}>Try again</button>}</div>}
       {loading ? <div className="profile-skeleton" role="status" aria-label="Loading profiles"><div /><span /><span /><span /></div> : current ? <>
         <div className="card-stack"><div className="stack-back" aria-hidden /><AnimatePresence mode="wait"><ProfileCard key={current.id} profile={current} busy={busy} onSwipe={submit} exitDirection={lastDirection} /></AnimatePresence></div>
         <div className="swipe-actions"><button className="swipe-button pass-button" onClick={() => void submit('pass')} disabled={busy} aria-label="Pass"><X size={29} strokeWidth={2} /><span>Pass</span></button>

@@ -11,17 +11,18 @@ export function MatchesView() {
   const [selected, setSelected] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  async function load() {
-    setLoading(true); setError('');
-    try { setMatches((await api<{ matches: Match[] }>('/matches')).matches); }
-    catch (e) { setError((e as Error).message); }
-    finally { setLoading(false); }
+  function load() {
+    return api<{ matches: Match[] }>('/matches')
+      .then(data => setMatches(data.matches))
+      .catch((e: Error) => setError(e.message))
+      .finally(() => setLoading(false));
   }
   useEffect(() => { void load(); }, []);
+  function retry() { setLoading(true); setError(''); void load(); }
   return <main id="main-content" className="matches-page"><Link href="/discover" className="back-link"><ChevronLeft size={18} />Back to Discover</Link>
     <div className="matches-heading"><span className="eyebrow">TWO LIKES. ONE LITTLE BEGINNING.</span><h1>Your matches<span className="pink-dot">.</span></h1><p>Turns out, the feeling is mutual.</p></div>
-    {error && <div className="error-banner" role="alert"><p>{error}</p><button onClick={load}>Try again</button></div>}
-    {loading ? <div className="matches-grid" role="status" aria-label="Loading matches"><div className="match-skeleton" /><div className="match-skeleton" /></div> : matches.length ? <div className="matches-grid">{matches.map(match => <button key={match.id} className="match-card" onClick={() => setSelected(match.profile)} aria-label={`View ${match.profile.name}'s profile`}><div className="match-card-photo"><Image src={match.profile.photoUrl} alt={`Illustrated portrait of ${match.profile.name}`} fill sizes="(max-width: 600px) 44vw, 280px" /><span><Heart size={14} fill="currentColor" /></span></div><div className="match-card-info"><h2>{match.profile.name}, {match.profile.age}</h2><p><MapPin size={13} />{match.profile.city}</p><small>Matched {new Date(match.matchedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</small></div></button>)}</div> : !error ? <div className="empty-card matches-empty"><div className="empty-symbol"><Heart size={36} /></div><h2>No matches yet.<br />Keep discovering!</h2><p>A match happens when you both like each other. A little curiosity is a good start.</p><Link href="/discover" className="button primary">Explore Discover</Link></div> : null}
+    {error && <div className="error-banner" role="alert"><p>{error}</p><button onClick={retry}>Try again</button></div>}
+    {loading ? <div className="matches-grid" role="status" aria-label="Loading matches"><div className="match-skeleton" /><div className="match-skeleton" /></div> : matches.length ? <div className="matches-grid">{matches.map((match, index) => <button key={match.id} className="match-card" onClick={() => setSelected(match.profile)} aria-label={`View ${match.profile.name}'s profile`}><div className="match-card-photo"><Image src={match.profile.photoUrl} alt={`Illustrated portrait of ${match.profile.name}`} fill loading={index < 3 ? 'eager' : 'lazy'} sizes="(max-width: 600px) 44vw, 280px" /><span><Heart size={14} fill="currentColor" /></span></div><div className="match-card-info"><h2>{match.profile.name}, {match.profile.age}</h2><p><MapPin size={13} />{match.profile.city}</p><small>Matched {new Date(match.matchedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</small></div></button>)}</div> : !error ? <div className="empty-card matches-empty"><div className="empty-symbol"><Heart size={36} /></div><h2>No matches yet.<br />Keep discovering!</h2><p>A match happens when you both like each other. A little curiosity is a good start.</p><Link href="/discover" className="button primary">Explore Discover</Link></div> : null}
     <p className="under-card-privacy"><LockKeyhole size={14} />Only mutual matches. Always.</p>
     <Dialog open={!!selected} onClose={() => setSelected(null)} title={selected ? `${selected.name}, ${selected.age}` : 'Profile'} description={selected?.city ?? ''} className="profile-dialog">{selected && <><Image src={selected.photoUrl} alt={`Illustrated portrait of ${selected.name}`} width={340} height={300} className="detail-photo" /><p>{selected.bio}</p><div className="interests">{selected.interests.map(interest => <span key={interest}>{interest}</span>)}</div><p className="mutual-label"><Heart size={14} fill="currentColor" />You both liked each other.</p></>}</Dialog>
   </main>;
