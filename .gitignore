@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+.env*
+!.env.example
+.postgres/
+.vercel/
+playwright-report/
+test-results/
+*.tsbuildinfo
+assignment-page.png
+tmp/
