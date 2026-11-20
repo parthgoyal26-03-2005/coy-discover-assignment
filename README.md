@@ -1,99 +1,119 @@
 # Coy Discover
 
-A standalone, mobile-first proposal for Coy's Discover tab, built for **Part B of the Coy SDE Intern assignment**. Browse 36 fictional adults, swipe left to pass or right to like, and discover a connection only when the feeling is mutual.
+A standalone implementation of **Part B of Coy's SDE Intern assignment**: a Discover tab with 36 fictional adult profiles, like/pass gestures, persistent decisions, and mutual matches. Home is the required placeholder.
 
-**[Open the live app](https://coy-discover-assignment.vercel.app/discover)** · **[Public GitHub repository](https://github.com/parthgoyal26-03-2005/coy-discover-assignment)** · **[Verification workflows](https://github.com/parthgoyal26-03-2005/coy-discover-assignment/actions)**
+**[Live demo](https://coy-discover-assignment.vercel.app/discover)** | **[GitHub source](https://github.com/parthgoyal26-03-2005/coy-discover-assignment)** | **[CI results](https://github.com/parthgoyal26-03-2005/coy-discover-assignment/actions)**
 
-The live app runs on the existing Vercel project with Node.js 24 and Neon PostgreSQL. All 36 fictional profiles are seeded. The default `main` branch contains the finished redesign and official local logo assets.
-
-This is an independent recruitment demonstration, not Coy's official application or codebase. It uses its own data and backend and never calls Coy's production APIs. Part A, OTP, invitations, payments, and chat are outside this submission.
-
-## What works
-
-- An intentionally blank Home placeholder and a working Discover tab.
-- Touch and mouse dragging, spring-back below the swipe threshold, Like/Pass buttons, and arrow-key shortcuts.
-- Profile biographies, interest tags, expandable information, and locally bundled illustrated portraits.
-- A server-confirmed match celebration and a Matches screen with profile details.
-- Persistent outgoing swipes and matches in PostgreSQL, restored after reload.
-- Anonymous browser sessions isolated by an HTTP-only cookie.
-- A reset action scoped to the current browser's session.
-- Loading skeletons, empty and error states, failed-swipe recovery, reduced motion, and accessible dialogs.
-
-## Brand refinement
-
-The interface uses Coy's measured typography, colors, borders, and button styles. The shared header renders the official SVG wordmark from [public/brand/](public/brand/README.md), including its original lettering and pink dot. Home, Discover, and Matches use the same header; the favicon and Apple touch icon also use official local assets. See [the visual review and actual before/after screenshots](docs/redesign/README.md). The API, matching logic, database schema, profile data, and existing tests are preserved.
+Start with [local installation](#local-installation), [API architecture](docs/API_ARCHITECTURE.md), [database relationships](docs/DATABASE.md), or the [beginner walkthrough](PROJECT_WALKTHROUGH.md). This is an independent recruitment demonstration, not Coy's official application or codebase.
 
 ## Screenshots
 
-These real screenshots show the final production build connected to Neon PostgreSQL, captured with Playwright on desktop and mobile.
+Actual screenshots of the approved interface, captured with Playwright from a production build. The readability cleanup preserves this design, animations, portraits, and branding.
 
-| Discover · desktop | Discover · mobile |
+| Discover: desktop | Discover: mobile |
 | --- | --- |
 | ![Desktop Discover](docs/screenshots/discover-desktop.png) | ![Mobile Discover](docs/screenshots/discover-mobile.png) |
 
-| Mutual match | Matches |
+| Mutual match celebration | Matches |
 | --- | --- |
-| ![Match celebration](docs/screenshots/match-mobile.png) | ![Matches view](docs/screenshots/matches-desktop.png) |
+| ![Match celebration](docs/screenshots/match-mobile.png) | ![Matches](docs/screenshots/matches-desktop.png) |
+
+## Features
+
+- Touch and mouse swipes, Like/Pass buttons, and keyboard arrows; short drags return to rest.
+- Public profile biographies, interests, expandable details, and 36 local illustrated portraits.
+- Server-confirmed match celebration and a Matches screen with profile details.
+- PostgreSQL persistence across reloads, with session-isolated progress and reset.
+- Private incoming likes; only mutual interest produces a visible connection.
+- Loading, empty, error, and retry states; accessible dialogs and reduced motion support.
 
 ## Stack
 
-| Technology | Purpose |
+| Technology | Responsibility |
 | --- | --- |
-| Next.js App Router + React | Pages, navigation, and server API handlers in one project |
-| TypeScript, strict mode | Catch data-shape mistakes during development |
-| Tailwind CSS 4 + CSS tokens | Shared color, spacing, layout, and responsive styling |
-| Motion | Drag gestures, card rotation, and transitions |
-| Lucide React | Consistent interface icons |
-| PostgreSQL / Neon | Durable records, transactions, and unique constraints |
-| Drizzle ORM + node-postgres | Typed queries and PostgreSQL connection pooling |
-| Zod | Runtime validation of API requests |
-| Radix Dialog | Focus trapping, focus restoration, and Escape dismissal |
-| Vitest + Playwright | Database integration tests and real browser walkthroughs |
-| Vercel | Deployment target; Node.js API runtime |
+| Next.js App Router, React, TypeScript | UI pages and Node.js route handlers in one application |
+| CSS tokens, Tailwind CSS 4, Bricolage Grotesque | Approved responsive interface and locally bundled typography |
+| Motion, Lucide, Radix Dialog | Gestures, icons, accessible focus and dialogs |
+| PostgreSQL hosted on Neon | Durable sessions, swipes, and matches; transactions and constraints |
+| Drizzle ORM, node-postgres | Typed SQL queries and a shared connection pool |
+| Zod | Runtime request validation |
+| Vitest, Playwright, GitHub Actions | Unit, real-database integration, browser, and CI checks |
+| Vercel | Existing production hosting with Node.js 24 |
 
-Headings and body text use Bricolage Grotesque, matching Coy's official site. Fonts are bundled locally. The interface follows the supplied Coy reference: white surfaces, bright pink actions, lavender accents, rounded cards, dark outlines, and hard offset shadows.
+## Architecture
 
-## Start locally
+```mermaid
+flowchart LR
+    A[React Discover and Matches] --> B[Same-origin JSON API]
+    B --> C[Validate request and cookie session]
+    C --> D[Matching service]
+    D --> E[Drizzle / node-postgres]
+    E --> F[(PostgreSQL)]
+    F --> G[Public profiles and verified mutual matches]
+    G --> A
+```
 
-Use **Node.js 22.13+ (or Node.js 24 LTS)** and npm. Git is needed for version control. A hosted Neon database, local PostgreSQL, or Docker can supply the database.
+The browser helper is [src/lib/api.ts](src/lib/api.ts). Routes resolve identity in [session.ts](src/lib/session/session.ts), call [service.ts](src/lib/matching/service.ts), and use [http.ts](src/lib/http.ts) for uncached JSON and safe errors. SQL and matching decisions stay on the server. [The API guide](docs/API_ARCHITECTURE.md) traces each request to its component, route, service, tables, and response.
+
+## API summary
+
+| Endpoint | Handler | Result |
+| --- | --- | --- |
+| `GET /feed` | [feed/route.ts](src/app/feed/route.ts) | Unswiped public profiles in stable order |
+| `POST /swipe` | [swipe/route.ts](src/app/swipe/route.ts) | Saves `{ profileId, direction: "like" or "pass" }`; reports a newly created match |
+| `GET /matches` | [matches/route.ts](src/app/matches/route.ts) | Current session's verified mutual matches |
+| `POST /api/demo/reset` | [api/demo/reset/route.ts](src/app/api/demo/reset/route.ts) | Clears only current-session swipes and matches |
+
+Sessions come from the HTTP-only `coy_session` cookie, never a request-body session ID. Handled errors use `{ "error": "message" }` with 400, 403, 404, 409, or 503 as appropriate. Reset ignores its body; swipe validates a strict JSON schema. See [complete requests, responses, validation, and flow diagrams](docs/API_ARCHITECTURE.md).
+
+## Matching and privacy
+
+A new outgoing **like** plus an existing private incoming like for the **same session/profile** creates a match. A pass and a one-sided like never do. The first profile, Aarohi, demonstrates a reciprocal like; Kabir demonstrates a one-sided like; passing Meera demonstrates that an incoming like alone is insufficient.
+
+Swipes and reset lock the same session row inside transactions. Unique indexes prevent duplicate decisions and matches. An identical retry succeeds with `isMatch: false`, avoiding another celebration; a conflicting action returns 409. Public responses explicitly select displayable fields, and match queries recheck both sides. No incoming-like flag, count, or roster is exposed. [Read the algorithm and pseudocode](docs/MATCHING_LOGIC.md).
+
+## Database summary
+
+| Table | Stores |
+| --- | --- |
+| `profiles` | Fictional profile fields, local image path, stable order |
+| `demo_sessions` | Random anonymous browser identity |
+| `swipes` | Session-to-profile outgoing like or pass; unique pair |
+| `incoming_likes` | Private simulated profile-to-session likes; composite primary key |
+| `matches` | Confirmed session-to-profile connection; unique pair |
+
+All interaction records reference a session and profile. Session deletion cascades to its interactions; the reset endpoint retains the session and incoming fixtures for replay. `coy_migrations` separately tracks applied SQL. See [columns, constraints, relationships, and ER diagram](docs/DATABASE.md).
+
+## Local installation
+
+Use **Node.js 24 LTS** (CI and Vercel use 24.x) and npm. Install dependencies, then copy the placeholder environment file:
 
 ```sh
 npm ci
+cp .env.example .env.local
 ```
 
-Copy `.env.example` to `.env.local` (PowerShell: `Copy-Item .env.example .env.local`). Choose one database option:
+PowerShell: `Copy-Item .env.example .env.local`.
 
-### Option A: Neon, the deployment database
+Choose one PostgreSQL option:
 
-Create a Neon PostgreSQL project and put its pooled connection URL into `.env.local`:
+- **Neon:** create your own database and replace `DATABASE_URL` in `.env.local` with its pooled connection URL, retaining Neon's TLS parameters.
+- **Local without Docker:** run `npm run db:local` and leave that terminal open. It starts real PostgreSQL on `127.0.0.1:54329`, persisting under ignored `.postgres/`.
+- **Docker:** run `docker compose up -d` for PostgreSQL on the same port. Run only one local option at a time.
+
+For either bundled local option, set this disposable development URL in `.env.local`:
+
+```dotenv
+DATABASE_URL=postgresql://coy:coy_local_only@127.0.0.1:54329/coy
+```
+
+Those are local development defaults, not hosted credentials. For Neon, the placeholder shape is:
 
 ```dotenv
 DATABASE_URL=postgresql://USER:PASSWORD@YOUR-NEON-HOST/DATABASE?sslmode=require
 ```
 
-Use the URL provided by Neon, including its TLS parameters. Keep it server-only: never prefix it with `NEXT_PUBLIC_`, paste it into source code, or commit `.env.local`. The app uses standard PostgreSQL queries, so the same migrations and tests work against Neon.
-
-### Option B: local PostgreSQL without Docker
-
-```sh
-npm run db:local
-```
-
-Leave that terminal open. This starts a **real PostgreSQL server**, with data stored under ignored `.postgres/`. Replace the placeholder in `.env.local` with `DATABASE_URL=postgresql://coy:coy_local_only@127.0.0.1:54329/coy`. These credentials are disposable local development defaults, not hosted database credentials. Stop it with Ctrl+C; restarting preserves the database.
-
-The `embedded-postgres` development dependency bundles PostgreSQL binaries. If your package manager blocks its installation script, approve/rebuild the platform package as described in the package's README. On Linux, run as a normal user rather than root. For machines where bundled binaries are unavailable, use Docker or an existing PostgreSQL installation.
-
-### Option C: Docker
-
-```sh
-docker compose up -d
-```
-
-This supplies PostgreSQL on the same local port and URL as Option B. Run only one local option at a time. Docker must be running.
-
-### Migrate, seed, run
-
-In a second terminal:
+Then apply the existing migration and seed the selected development database:
 
 ```sh
 npm run db:migrate
@@ -101,184 +121,49 @@ npm run db:seed
 npm run dev
 ```
 
-Open **http://localhost:3000**. `/` redirects to `/discover`.
+Open http://localhost:3000; `/` redirects to `/discover`. Migration is tracked and transaction-protected; seeding upserts the 36 stable profile IDs. Neither runs automatically during a build or deployment. This cleanup requires no new migration.
 
-Migrations are tracked in `coy_migrations`, applied inside a transaction, and serialized with a PostgreSQL advisory lock. Re-running migration is safe. Seeding upserts the same 36 profile IDs and preserves existing sessions and swipe history. Private incoming likes are initialized when a browser session is created.
+Keep `.env.local` private and never prefix `DATABASE_URL` with `NEXT_PUBLIC_`. Missing database configuration produces a generic 503 and a UI retry option; there is no in-memory persistence fallback. Bundled PostgreSQL needs its platform package's installation script; on Linux run it as a normal user, or use Docker/Neon instead.
 
-If `DATABASE_URL` is absent, migration and seed scripts explain the missing setup. API requests return a helpful 503 response; the UI offers retry. There is no in-memory or localStorage persistence fallback.
+## Testing
 
-## Try the demo
-
-1. Browse the first profile and drag right or select Like. The backend confirms a mutual match and opens the celebration.
-2. Select **View Matches**, open a matched profile, and reload. The match remains.
-3. Return to Discover. The swiped profile stays out of the feed.
-4. Like the second profile: a one-sided like does not create a match.
-5. Pass the third profile: passing never creates a match.
-6. Open Home to see the placeholder, or use the header reset control to replay your browser's demo.
-
-For repeatable review, the first profile is a reciprocal-like fixture. This is documented for interview demonstration; no API or UI exposes incoming-like flags, counts, or lists. All fixture logic stays on the server.
-
-## Architecture
-
-```mermaid
-flowchart LR
-    A[React Discover and Matches] -->|HTTP-only session cookie| B[Next.js route handlers]
-    B --> C[Zod request validation]
-    C --> D[Matching service]
-    D --> E[Drizzle ORM]
-    E --> F[(PostgreSQL / Neon)]
-    F -->|Public profile fields and mutual matches| A
-```
-
-### Tables
-
-| Table | Purpose and constraints |
-| --- | --- |
-| `profiles` | 36 adults, biography, location, interests, local portrait URL, stable feed order |
-| `demo_sessions` | Random session UUID and creation time |
-| `swipes` | Session → profile, action `like` or `pass`; unique `(session_id, profile_id)` |
-| `incoming_likes` | Private simulated profile → session likes; composite primary key |
-| `matches` | Session ↔ profile mutual connection; unique `(session_id, profile_id)` |
-
-Session-owned records reference `demo_sessions`; profile references point to `profiles`. Deleting a session cascades to its interactions. Reset instead deletes only that session's matches and outgoing swipes, preserving the private fixtures for replay.
-
-### Browser sessions
-
-The server checks a random UUID in the `coy_session` cookie against PostgreSQL. An unknown or absent ID creates a fresh server-owned session. The cookie is HTTP-only, SameSite=Lax, has a one-year lifetime, and uses Secure in production. Browsers cannot choose a different session through a request body. Cookies and records survive reloads and deployments when the same database and domain are retained. Clearing cookies creates a new demo identity.
-
-### Matching and privacy
-
-The rule is deliberately simple: **outgoing LIKE + private incoming LIKE = match**. A pass or a one-sided like never matches.
-
-The matching service locks the session row in a database transaction before reading or changing interaction state. The swipe and any new match commit together. Reset obtains the same lock. Unique indexes provide an additional database-level guarantee against duplicates.
-
-An identical retried swipe returns success with `isMatch: false`; it does not celebrate a match twice. A contradictory retry returns 409. Feed queries exclude every existing swipe, including passes, and never join incoming likes. Public responses explicitly select displayable fields. Matches are joined against both the outgoing like and incoming like before being returned.
-
-Mutation routes reject cross-site Origins and cross-site Fetch Metadata. Session cookies are never returned in JSON. Personalized endpoints use `Cache-Control: private, no-store`.
-
-## API
-
-All responses are JSON. Cookie sessions are created automatically. Examples omit the full profile biography and tags for brevity.
-
-### `GET /feed`
-
-Returns all unswiped profiles in stable fixture order:
-
-```json
-{"profiles":[{"id":"00000000-0000-4000-8000-000000000001","name":"Aarohi","age":23,"city":"Delhi","bio":"…","interests":["Photography","Bookstores","Coffee"],"photoUrl":"/demo-profiles/aarohi.svg"}]}
-```
-
-Returns `{"profiles":[]}` after the deck is exhausted. Never includes incoming-like status or internal seed fields.
-
-### `POST /swipe`
-
-```json
-{"profileId":"00000000-0000-4000-8000-000000000001","direction":"like"}
-```
-
-`direction` accepts only `like` or `pass`. Extra fields are rejected. A non-match or idempotent retry returns:
-
-```json
-{"success":true,"isMatch":false}
-```
-
-A newly confirmed mutual match returns:
-
-```json
-{"success":true,"isMatch":true,"profile":{"id":"00000000-0000-4000-8000-000000000001","name":"Aarohi","age":23,"city":"Delhi","bio":"…","interests":["Photography","Bookstores","Coffee"],"photoUrl":"/demo-profiles/aarohi.svg"}}
-```
-
-### `GET /matches`
-
-```json
-{"matches":[{"id":"MATCH-UUID","matchedAt":"2026-11-19T12:00:00.000Z","profile":{"id":"PROFILE-UUID","name":"Aarohi","age":23,"city":"Delhi","bio":"…","interests":["Photography"],"photoUrl":"/demo-profiles/aarohi.svg"}}]}
-```
-
-Returns `{"matches":[]}` when there are no mutual connections.
-
-### `POST /api/demo/reset`
-
-Send `{}`. Clears only the caller's outgoing swipes and matches; returns `{"success":true}`. No target session ID is accepted or used. Other browsers remain unchanged.
-
-### Errors
-
-| Status | Meaning |
-| --- | --- |
-| 400 | Malformed JSON or invalid profile ID/direction/body |
-| 403 | Cross-site mutation attempt |
-| 404 | Target profile does not exist |
-| 409 | Profile already swiped in the opposite direction |
-| 503 | Database unavailable or not configured |
-
-Errors have the shape `{"error":"A useful message."}`. Database details and credentials are never included in client errors.
-
-## Tests and commands
-
-Start and seed a dedicated local database first. Database tests create independent sessions and clean them up. Browser tests also use isolated browser cookies, and leave demo sessions in the test database; do not run them against a database containing real user data.
+**Use a separate test database.** Tests create sessions, exercise reset, and delete their own fixtures. Do not use the deployed database. Set `DATABASE_URL` in the terminal to the test URL before migration, seeding, and all test/server commands; it takes precedence over `.env.local`.
 
 ```sh
-npm run typecheck
+export DATABASE_URL=postgresql://USER:PASSWORD@TEST-HOST/TEST-DATABASE
+# PowerShell: $env:DATABASE_URL = 'postgresql://USER:PASSWORD@TEST-HOST/TEST-DATABASE'
+npm run db:migrate
+npm run db:seed
 npm run lint
+npm run typecheck
 npm test
 npx playwright install chromium
 npm run build
 npm run test:e2e
-npm start
 ```
 
-Playwright starts its own production server on port 3100, so run `npm run build` first. It runs both desktop Chromium and mobile Chromium with iPhone dimensions and touch support. Tests exercise actual touch dragging, mouse dragging, buttons, keyboard controls, celebration, matches, reloads, empty states, reset, failure recovery, all image URLs, API validation, privacy, concurrency, and session isolation. Screenshots go into `docs/screenshots/`. To use an installed Edge browser instead, set `PLAYWRIGHT_CHANNEL=msedge` in your terminal.
+Vitest uses a real PostgreSQL database for matching, concurrency, constraints, reset, and isolation, plus focused client/error-boundary unit tests. Playwright starts a production server on port 3100 and runs desktop Chromium and touch-enabled mobile Chromium. Use `PLAYWRIGHT_CHANNEL=msedge` to select an installed Edge browser. Ensure another server with a different database is not already running on that port, because local Playwright configuration can reuse an existing server.
 
-Vitest exercises the matching service against PostgreSQL, including persistence, one-sided likes, passes, public projections, concurrent requests, database constraints, independent sessions, and reset isolation. It does not substitute an in-memory database.
+Browser tests cover gestures, buttons, keyboard, privacy, validation, cookie replacement, reload persistence, reset, error recovery, and all portrait URLs. Screenshots are written to `docs/screenshots/`. See [actual verification results](VALIDATION.md). `npm start` serves a completed production build outside the test runner.
 
-| Script | Purpose |
-| --- | --- |
-| `dev` | Development server |
-| `build` / `start` | Production build / server |
-| `lint` / `typecheck` | Static checks |
-| `test` / `test:e2e` | Database integration / browser tests |
-| `db:local` | Persistent local PostgreSQL |
-| `db:migrate` / `db:seed` | Apply tracked SQL migrations / upsert fixtures |
+## Documentation
 
-See [VALIDATION.md](VALIDATION.md) for the checks actually run during implementation.
+- [API architecture](docs/API_ARCHITECTURE.md): request flows, exact file locations, JSON, errors.
+- [Database guide](docs/DATABASE.md): all columns, relationships, constraints, reset and persistence.
+- [Matching logic](docs/MATCHING_LOGIC.md): concrete examples, locking, retries, privacy, pseudocode.
+- [Project walkthrough](PROJECT_WALKTHROUGH.md): junior-friendly explanations and a two-minute interview introduction.
+- [Validation record](VALIDATION.md): checks actually executed and review findings.
+- [Historical redesign evidence](docs/redesign/README.md): earlier before/after comparisons; current screenshots are above.
+- [Official brand asset sources](public/brand/README.md) and [portrait attribution](public/demo-profiles/ATTRIBUTION.md).
 
-## Existing Vercel deployment
+## Deployment
 
-Production: https://coy-discover-assignment.vercel.app/discover
+The existing [production URL](https://coy-discover-assignment.vercel.app/discover), Vercel project, Node.js 24 configuration, and Neon database are retained. Vercel now reports the existing project as Git-linked to `parthgoyal26-03-2005/coy-discover-assignment`. Pushes to `main` trigger the production deployment; GitHub Actions separately runs the verification workflow and does not itself deploy.
 
-The existing `coy-discover-assignment` project is retained, including its domain, Node.js 24 settings, and server-only `DATABASE_URL`. Deploy the verified `main` commit to that project; do not create a second project or replace its database.
+The earlier publication used Vercel's Git-source deployment API before the Git connection was configured. The final review checks the automatic deployment's commit against GitHub `main` and verifies the existing public URL. Preserve the project's environment variables and database when updating it; builds do not migrate or seed production. Exact final workflow/deployment status is reported in the delivery summary.
 
-The current publication uses a deployment from the GitHub commit through Vercel's API. Automatic deployment from GitHub pushes is not connected. To enable it, open the existing project's **Settings > Git > Connect Git Repository**, select `parthgoyal26-03-2005/coy-discover-assignment`, and use `main` as the production branch. Preserve the existing environment variables.
+## Scope and limitations
 
-For a separate installation, configure your own `DATABASE_URL`, run `db:migrate` and `db:seed` explicitly, and import the repository into your own Vercel project. The API handlers use the Node.js runtime. Migrations do not run on builds or function invocations. Retain the same database and domain across updates to preserve sessions.
+This independent assignment uses its own backend and fictional adults. It does not call Coy's production APIs. Official local logo/icon assets identify the assignment's brand; they do not imply endorsement. All fonts and portraits are local.
 
-## Project map
-
-```text
-src/app/                 Pages and exact API routes
-src/components/          Shared shell and accessible dialogs
-src/components/discover/ Swipe cards, controls, and celebration
-src/components/matches/ Mutual match grid and profile details
-src/lib/db/              PostgreSQL client, schema, SQL migrations
-src/lib/matching/        Transactional business rules
-src/lib/session/         HTTP-only anonymous sessions
-src/lib/validation/      Zod request schema
-src/data/                Fictional seed fixtures (server tooling only)
-public/brand/            Official Coy wordmark and app icons
-public/demo-profiles/    36 original local SVG illustrations
-scripts/                Local PostgreSQL, migration, seeding
-tests/                  Database integration and browser tests
-docs/screenshots/        Actual app screenshots
-```
-
-## Decisions and limitations
-
-- **One application:** Next.js keeps this assignment easy to review and run; separate services would add little value.
-- **PostgreSQL:** Persistence, row locks, and unique constraints protect matching across simultaneous requests. Neon is the intended hosted PostgreSQL provider.
-- **Server-side matching:** A client must never decide whether another person liked it. Only verified matches cross the API boundary.
-- **Illustrations:** Original vector portraits are bundled and predictable. No real people's identities are attached to fictional bios. See [asset attribution](public/demo-profiles/ATTRIBUTION.md).
-- **Demo identity:** Cookies provide isolation, not production authentication. There is no recovery across browsers or after cookie deletion.
-- **Finite fixtures:** Thirty-six profiles and private incoming likes simulate discovery. No real user data, preferences, messaging, account management, moderation, or anti-abuse infrastructure is included.
-- **Operational scope:** Demo sessions do not yet expire from the database automatically. A public production product would need retention, rate limiting, monitoring, and real user consent and safety workflows.
-- **Hosting setup:** A live deployment requires a Neon URL configured in Vercel. A successful local test run is not evidence of a completed live deployment.
-
-For a plain-English interview explanation, read [PROJECT_WALKTHROUGH.md](PROJECT_WALKTHROUGH.md).
+Incoming likes are simulated fixtures, not real two-user actions. Cookies provide anonymous isolation rather than authentication or account recovery. There is no OTP, invitation system, payment, chat, moderation, or preference filtering. Sessions do not yet have an automatic database-retention process. A real public product would need identity, consent, abuse controls, rate limiting, and operational monitoring. Those are outside Part B and are not added by this cleanup.

@@ -1,4 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import { config } from 'dotenv';
 config({ path: '.env.local', quiet: true });
-export default defineConfig({ test: { include: ['tests/**/*.test.ts'], maxWorkers: 1, testTimeout: 15000 } });
+export default defineConfig({
+  test: { include: ['tests/**/*.test.ts'], maxWorkers: 1, testTimeout: 15000 },
+});

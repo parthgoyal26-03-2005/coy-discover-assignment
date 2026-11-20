@@ -7,13 +7,23 @@ import { createSession } from '../matching/service';
 import { z } from 'zod';
 
 export async function getSession() {
-  const jar = await cookies();
-  const id = jar.get('coy_session')?.value;
-  if (id && z.uuid().safeParse(id).success) {
-    const [session] = await getDb().select({ id: sessions.id }).from(sessions).where(eq(sessions.id, id));
-    if (session) return id;
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get('coy_session')?.value;
+  if (sessionId && z.uuid().safeParse(sessionId).success) {
+    const [session] = await getDb()
+      .select({ id: sessions.id })
+      .from(sessions)
+      .where(eq(sessions.id, sessionId));
+    if (session) return sessionId;
   }
-  const newId = await createSession();
-  jar.set('coy_session', newId, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/', maxAge: 60 * 60 * 24 * 365 });
-  return newId;
+  // Missing, malformed, and unknown cookies get a new server-owned session.
+  const newSessionId = await createSession();
+  cookieStore.set('coy_session', newSessionId, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 365,
+  });
+  return newSessionId;
 }

@@ -1,7 +1,15 @@
+import { handleError, json } from '@/lib/http';
 import { listMatches } from '@/lib/matching/service';
 import { getSession } from '@/lib/session/session';
-import { json, handleError } from '@/lib/http';
+
 export const runtime = 'nodejs';
+
 export async function GET() {
-  try { return json({ matches: await listMatches(await getSession()) }); } catch (e) { return handleError(e); }
+  try {
+    const sessionId = await getSession();
+    const matches = await listMatches(sessionId);
+    return json({ matches });
+  } catch (error) {
+    return handleError(error);
+  }
 }
